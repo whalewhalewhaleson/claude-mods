@@ -1,17 +1,11 @@
 import { expect, test } from 'claude-code/testing'
 
-import { bar, countdown, k, shade } from './register'
-
-test('bar fills proportionally and clamps', () => {
-  expect(bar(0)).toBe('░'.repeat(24))
-  expect(bar(50)).toBe('█'.repeat(12) + '░'.repeat(12))
-  expect(bar(150)).toBe('█'.repeat(24))
-})
+import { countdown, k, shade } from './register'
 
 test('shade goes green → yellow → red', () => {
-  expect(shade(10)).toBe('green')
-  expect(shade(60)).toBe('yellow')
-  expect(shade(90)).toBe('red')
+  expect(shade(10)).toBe('#9ccfd8')
+  expect(shade(60)).toBe('#f6c177')
+  expect(shade(90)).toBe('#eb6f92')
 })
 
 test('k and countdown format like the status line', () => {

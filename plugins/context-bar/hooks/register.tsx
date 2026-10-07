@@ -8,13 +8,18 @@ const compactions = atom({ plugin: 'context-bar', key: 'compactions' } as const,
 
 const WIDTH = 24
 
-export const bar = (percent: number) => {
-  const full = Math.round((Math.min(100, Math.max(0, percent)) / 100) * WIDTH)
-  return '█'.repeat(full) + '░'.repeat(WIDTH - full)
+const C = {
+  model: '#c4a7e7',
+  label: '#908caa',
+  value: '#e0def4',
+  ok: '#9ccfd8',
+  warn: '#f6c177',
+  hot: '#eb6f92',
+  empty: '#403d52',
 }
 
 export const shade = (percent: number) =>
-  percent >= 80 ? 'red' : percent >= 50 ? 'yellow' : 'green'
+  percent >= 80 ? C.hot : percent >= 50 ? C.warn : C.ok
 
 export const k = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`)
 
@@ -73,35 +78,51 @@ export const register: Register = on => {
     if (s === null) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
-    const sep = <Text dimColor> | </Text>
+    const sep = <Text color={C.empty}> · </Text>
     const clock = await $.clock.now()
-    const pct = (n?: number) => (n === undefined ? '–' : `${Math.round(n)}%`)
+    const stat = (label: string, n?: number) => (
+      <Box>
+        <Text color={C.label}>{label} </Text>
+        {n === undefined ? (
+          <Text color={C.empty}>–</Text>
+        ) : (
+          <Text color={shade(n)}>{Math.round(n)}%</Text>
+        )}
+      </Box>
+    )
+    const full = s.percent === undefined ? 0 : Math.round((s.percent / 100) * WIDTH)
 
     return (
       <Box flexDirection="column">
         <Box>
-          <Text color="magentaBright">{s.model}</Text>
+          <Text color={C.model} bold>✦ {s.model}</Text>
           {sep}
-          <Text color="magentaBright">Compactions: {s.compactions}</Text>
+          <Text color={C.label}>compactions </Text>
+          <Text color={C.value}>{s.compactions}</Text>
           {s.usd !== undefined && sep}
-          {s.usd !== undefined && <Text dimColor>${s.usd.toFixed(2)}</Text>}
+          {s.usd !== undefined && <Text color={C.value}>${s.usd.toFixed(2)}</Text>}
         </Box>
         <Box>
-          <Text>Session: {pct(s.session)}</Text>
+          {stat('session', s.session)}
           {sep}
-          <Text>Weekly: {pct(s.weekly)}</Text>
+          {stat('weekly', s.weekly)}
           {s.resetsAt !== undefined && sep}
-          {s.resetsAt !== undefined && <Text>Reset: {countdown(s.resetsAt, clock)}</Text>}
+          {s.resetsAt !== undefined && <Text color={C.label}>resets in </Text>}
+          {s.resetsAt !== undefined && <Text color={C.value}>{countdown(s.resetsAt, clock)}</Text>}
         </Box>
         <Box>
-          <Text color="yellow">Context: </Text>
+          <Text color={C.label}>context </Text>
           {s.percent === undefined ? (
-            <Text dimColor>{'░'.repeat(WIDTH)} waiting for first reply…</Text>
+            <Box>
+              <Text color={C.empty}>{'━'.repeat(WIDTH)}</Text>
+              <Text color={C.label} italic> waiting for first reply…</Text>
+            </Box>
           ) : (
             <Box>
-              <Text color={shade(s.percent)}>{bar(s.percent)}</Text>
-              <Text bold> {s.percent}%</Text>
-              <Text dimColor> ({k(s.tokens ?? 0)}/{k(s.window)})</Text>
+              <Text color={shade(s.percent)}>{'━'.repeat(full)}</Text>
+              <Text color={C.empty}>{'━'.repeat(WIDTH - full)}</Text>
+              <Text color={shade(s.percent)} bold> {s.percent}%</Text>
+              <Text color={C.label}> {k(s.tokens ?? 0)} / {k(s.window)}</Text>
             </Box>
           )}
         </Box>
