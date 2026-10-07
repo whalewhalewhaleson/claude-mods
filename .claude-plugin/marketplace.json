@@ -1,0 +1,11 @@
+{
+  "name": "whaleson-mods",
+  "owner": { "name": "whaleson" },
+  "plugins": [
+    {
+      "name": "context-bar",
+      "source": "./plugins/context-bar",
+      "description": "Your status line (model, session/weekly usage, context bar) above the prompt"
+    }
+  ]
+}
